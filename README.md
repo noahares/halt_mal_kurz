@@ -1,7 +1,7 @@
 # WIP: Halt Mal Kurz Corona Edition
 
-In an effort to play card games with my friends in times of social distancing I started this porject to be able to play [Halt Mal Kurz](http://www.halt-mal-kurz.de/) via the web.
-This Project is based on Nodejs and Phaser. It uses an Express server and socket.io to communicate between the server and clients.
+In an effort to play card games with my friends in times of social distancing I started this project to be able to play [Halt Mal Kurz](http://www.halt-mal-kurz.de/) via the web.
+This Project is based on Nodejs and Phaser 3. It uses an Express server and socket.io to communicate between the server and  the clients.
 
 ## Installation
 
