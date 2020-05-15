@@ -12,24 +12,43 @@ export default class Game extends Phaser.Scene {
 
     preload() {
         this.load.image('backside', 'src/assets/backside.jpg');
-        this.load.image('ach_mein_dein', 'src/assets/ach_mein_dein.jpg');
-        this.load.image('duo_schnick', 'src/assets/duo_schnick.jpg');
-        this.load.image('gruppen_schnick', 'src/assets/gruppen_schnick.jpg');
-        this.load.image('halt_mal_kurz', 'src/assets/halt_mal_kurz.jpg');
-        this.load.image('kapitalismus', 'src/assets/kapitalismus.jpg');
+        this.load.image('ach_mein_dein_kaenguru', 'src/assets/ach_mein_dein.jpg');
+        this.load.image('ach_mein_dein_kleinkuenstler', 'src/assets/ach_mein_dein.jpg');
+        this.load.image('ach_mein_dein_pinguin', 'src/assets/ach_mein_dein.jpg');
+        this.load.image('duo_schnick_kaenguru', 'src/assets/duo_schnick.jpg');
+        this.load.image('duo_schnick_kleinkuenstler', 'src/assets/duo_schnick.jpg');
+        this.load.image('duo_schnick_pinguin', 'src/assets/duo_schnick.jpg');
+        this.load.image('gruppen_schnick_kaenguru', 'src/assets/gruppen_schnick.jpg');
+        this.load.image('gruppen_schnick_kleinkuenstler', 'src/assets/gruppen_schnick.jpg');
+        this.load.image('gruppen_schnick_pinguin', 'src/assets/gruppen_schnick.jpg');
+        this.load.image('halt_mal_kurz_kaenguru', 'src/assets/halt_mal_kurz.jpg');
+        this.load.image('halt_mal_kurz_kleinkuenstler', 'src/assets/halt_mal_kurz.jpg');
+        this.load.image('halt_mal_kurz_pinguin', 'src/assets/halt_mal_kurz.jpg');
+        this.load.image('kapitalismus_kaenguru', 'src/assets/kapitalismus.jpg');
+        this.load.image('kapitalismus_kleinkuenstler', 'src/assets/kapitalismus.jpg');
+        this.load.image('kapitalismus_pinguin', 'src/assets/kapitalismus.jpg');
         this.load.image('kommunismus', 'src/assets/kommunismus.jpg');
-        this.load.image('nazi_kopf', 'src/assets/nazi_kopf.jpg');
-        this.load.image('not_to_do_liste', 'src/assets/not_to_do_liste.jpg');
-        this.load.image('polizei_kopf', 'src/assets/polizei_kopf.jpg');
+        this.load.image('nazi_kaenguru', 'src/assets/nazi_kopf.jpg');
+        this.load.image('nazi_kleinkuenstler', 'src/assets/nazi_kopf.jpg');
+        this.load.image('nazi_pinguin', 'src/assets/nazi_kopf.jpg');
+        this.load.image('not_to_do_liste_kaenguru', 'src/assets/not_to_do_liste.jpg');
+        this.load.image('not_to_do_liste_kleinkuenstler', 'src/assets/not_to_do_liste.jpg');
+        this.load.image('not_to_do_liste_pinguin', 'src/assets/not_to_do_liste.jpg');
+        this.load.image('polizei_kaenguru', 'src/assets/polizei_kopf.jpg');
+        this.load.image('polizei_kleinkuenstler', 'src/assets/polizei_kopf.jpg');
+        this.load.image('polizei_pinguin', 'src/assets/polizei_kopf.jpg');
         this.load.image('razupaltuff', 'src/assets/razupaltuff.jpg');
-        this.load.image('vollversammlung', 'src/assets/vollversammlung.jpg');
+        this.load.image('vollversammlung_kaenguru', 'src/assets/vollversammlung.jpg');
+        this.load.image('vollversammlung_kleinkuenstler', 'src/assets/vollversammlung.jpg');
+        this.load.image('vollversammlung_pinguin', 'src/assets/vollversammlung.jpg');
     }
 
     create() {
         let self = this;
 
-        this.isPlayerA = false;
-        this.opponentCards = [];
+        this.playerId = -1;
+        this.cards = [[]];
+        this.numPlayers = 0;
 
         this.zone = new Zone(this);
         this.dropZone = this.zone.renderZone();
@@ -42,8 +61,16 @@ export default class Game extends Phaser.Scene {
             console.log('Connected!');
         });
 
-        this.socket.on('isPlayerA', function () {
-            self.isPlayerA = true;
+        this.socket.on('newPlayer', function (playerId) {
+            if (self.playerId === -1) {
+                self.playerId = playerId;
+                self.numPlayers = playerId + 1;
+                console.log('I am player ' + playerId);
+                console.log(self.numPlayers);
+            } else {
+                self.numPlayers++;
+                console.log(self.numPlayers);
+            }
         });
 
         this.socket.on('dealCards', function () {
@@ -51,15 +78,14 @@ export default class Game extends Phaser.Scene {
             self.dealText.disableInteractive();
         });
 
-        this.socket.on('cardPlayed', function (gameObject, isPlayerA) {
-            console.log(self.isPlayerA);
-            if (isPlayerA !== self.isPlayerA) {
+        this.socket.on('cardPlayed', function (gameObject, playerId) {
+            if (playerId !== self.playerId) {
             console.log('A card was played');
                 let sprite = gameObject.textureKey;
-                self.opponentCards.shift().destroy();
+                self.cards[playerId].shift().destroy();
                 self.dropZone.data.values.cards++;
-                let card = new Card(self);
-                card.render(self.dropZone.x, self.dropZone.y, sprite).disableInteractive();
+                let card = new Card(self, gameObject.category, gameObject.symbol, 'backside');
+                card.render(self.dropZone.x, self.dropZone.y).disableInteractive();
             }
         });
 
@@ -115,7 +141,7 @@ export default class Game extends Phaser.Scene {
                 gameObject.x = dropZone.x
                 gameObject.y = dropZone.y;
                 gameObject.disableInteractive();
-                self.socket.emit('cardPlayed', gameObject, self.isPlayerA);
+                self.socket.emit('cardPlayed', gameObject, self.playerId);
             });
         }
 
