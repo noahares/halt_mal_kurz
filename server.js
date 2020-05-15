@@ -8,16 +8,16 @@ io.on('connection', function (socket) {
     console.log('A user connected: ' + socket.id);
     players.push(socket.id);
 
-    if (players.length === 1) {
-        io.emit('isPlayerA');
+    if (players.length > 0) {
+        io.emit('newPlayer', players.length - 1);
     }
 
     socket.on('dealCards', function () {
         io.emit('dealCards');
     });
 
-    socket.on('cardPlayed', function (gameObject, isPlayerA) {
-        io.emit('cardPlayed', gameObject, isPlayerA);
+    socket.on('cardPlayed', function (gameObject, playerId) {
+        io.emit('cardPlayed', gameObject, playerId);
     });
 
     socket.on('disconnect', function () {
